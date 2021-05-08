@@ -10,9 +10,8 @@ import UIKit
 
 class CalculatorViewController: UIViewController {
 
-    let NUM_PATTERN = try? NSRegularExpression(pattern: "(?:[-]\\s*+)?+\\d*+(?:[.]\\d++)?+")
-    var bill = 0.0
-    var tip = 0.1
+    var bill:Double = 0.0
+    var tip:Double = 0.1
     var split = 2
     
     @IBOutlet weak var billTextField: UITextField!
@@ -21,16 +20,16 @@ class CalculatorViewController: UIViewController {
     @IBOutlet weak var twentyPctButton: UIButton!
     @IBOutlet weak var splitNumberLabel: UILabel!
     
-    func updateBill() {
-        let billText = billTextField.text
-        if(billText?.isEmpty ?? true) { return }
-        bill = Double(billText!) ?? bill
-    }
-    
     @IBAction func billTextChanged(_ sender: UITextField) {
         updateBill()
     }
     
+    func updateBill() {
+        let billText = firstNumericSubstring(billTextField.text)
+        if(billText?.isEmpty ?? true) { return }
+        bill = Double(billText!) ?? bill
+    }
+
     @IBAction func tipChanged(_ sender: UIButton) {
         billTextField.endEditing(true)
         
@@ -40,12 +39,9 @@ class CalculatorViewController: UIViewController {
         
         sender.isSelected = true
         
-        var str = sender.currentTitle ?? "0"
-        var range = NSRange(location: 0, length: str.utf16.count)
-        range = NUM_PATTERN?.rangeOfFirstMatch(in: str, range: range) ?? range
-        let match = String(str[Range(range, in: str)!])
-        if(match.utf16.count > 0){ str = match }
-        tip = Double(str) ?? tip
+        let tipText = firstNumericSubstring(sender.currentTitle)
+        if(tipText?.isEmpty ?? true) { return }
+        tip = Double(tipText!) ?? tip
     }
     
     @IBAction func stepperValueChanged(_ sender: UIStepper) {
@@ -58,6 +54,13 @@ class CalculatorViewController: UIViewController {
         billTextField.endEditing(true)
         updateBill()
     }
-
+    
+    private func firstNumericSubstring(_ s:String?) -> String? {
+        let r = s?.range(of:"([-]\\s*+)?+\\d*+([.]\\d{1,8}+)?+",options:.regularExpression)
+        if(r?.isEmpty ?? true) { return nil }
+        let substr = s![r!]
+        return substr.isEmpty ? nil : String(substr)
+    }
+    
 }
 
