@@ -12,7 +12,7 @@ class CalculatorViewController: UIViewController {
 
     var bill:Double = 0.0
     var tip:Double = 0.1
-    var split = 2
+    var split:Int = 2
     
     @IBOutlet weak var billTextField: UITextField!
     @IBOutlet weak var zeroPctButton: UIButton!
@@ -24,12 +24,6 @@ class CalculatorViewController: UIViewController {
         updateBill()
     }
     
-    func updateBill() {
-        let billText = firstNumericSubstring(billTextField.text)
-        if(billText?.isEmpty ?? true) { return }
-        bill = Double(billText!) ?? bill
-    }
-
     @IBAction func tipChanged(_ sender: UIButton) {
         billTextField.endEditing(true)
         
@@ -38,10 +32,7 @@ class CalculatorViewController: UIViewController {
         twentyPctButton.isSelected = false
         
         sender.isSelected = true
-        
-        let tipText = firstNumericSubstring(sender.currentTitle)
-        if(tipText?.isEmpty ?? true) { return }
-        tip = Double(tipText!) ?? tip
+        tip = firstNumber(sender.currentTitle) ?? tip
     }
     
     @IBAction func stepperValueChanged(_ sender: UIStepper) {
@@ -53,14 +44,38 @@ class CalculatorViewController: UIViewController {
     @IBAction func calculatePressed(_ sender: UIButton) {
         billTextField.endEditing(true)
         updateBill()
+        print((tip + 1.0) * bill / Double(split))
     }
     
-    private func firstNumericSubstring(_ s:String?) -> String? {
-        let r = s?.range(of:"([-]\\s*+)?+\\d*+([.]\\d{1,8}+)?+",options:.regularExpression)
-        if(r?.isEmpty ?? true) { return nil }
-        let substr = s![r!]
-        return substr.isEmpty ? nil : String(substr)
+    private func updateBill() {
+        bill = firstNumber(billTextField.text) ?? bill
+    }
+
+    private func firstNumber(_ str:String?) -> Double? {
+        guard let s = str else { return nil }
+        let r = NSRange(s.startIndex ..< s.endIndex, in: s)
+        guard let match = regex.firstMatch(in: s, range: r) else { return nil }
+        
+        let negativeRange = match.range(withName: "negative")
+        let numberRange = match.range(withName: "number")
+        let percentRange = match.range(withName: "percent")
+        
+        guard let range = Range(numberRange, in: s) else { return nil }
+        guard var number = Double(s[range]) else { return nil }
+        if(negativeRange.length > 0) {
+            number *= -1.0
+        }
+        if(percentRange.length > 0) {
+            number *= 0.01
+        }
+        return number
     }
     
+    private let regex = try! NSRegularExpression(pattern: PATTERN)
+    
+    private static let PATTERN =
+        #"(?<negative>[-]?+)\s*"# +
+        #"(?<number>\d++[.]?+\d*+|[.]\d++)"# +
+        #"\s*(?<percent>[%]?+)"#
 }
 

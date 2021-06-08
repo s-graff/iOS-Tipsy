@@ -72,8 +72,8 @@
 		BEBA2838256E2E790080C8DA /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				ADB689562326708D006D4E2B /* CalculatorViewController.swift */,
 				BEBA2835256E24C10080C8DA /* ResultsViewController.swift */,
+				ADB689562326708D006D4E2B /* CalculatorViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
