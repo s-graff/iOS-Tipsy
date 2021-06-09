@@ -12,7 +12,7 @@ class CalculatorViewController: UIViewController {
 
     var bill:Double = 0.0
     var tip:Double = 0.1
-    var split:Int = 2
+    var split:Int = 1
     
     @IBOutlet weak var billTextField: UITextField!
     @IBOutlet weak var zeroPctButton: UIButton!
@@ -44,7 +44,14 @@ class CalculatorViewController: UIViewController {
     @IBAction func calculatePressed(_ sender: UIButton) {
         billTextField.endEditing(true)
         updateBill()
-        print((tip + 1.0) * bill / Double(split))
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let vc = segue.destination as? ResultsViewController {
+            vc.totalPerPerson = String(format: "%.2f", (tip + 1.0) * bill / Double(split))
+            vc.numberOfPeople = String(split)
+            vc.tipPercentage = String(tip * 100.0)
+        }
     }
     
     private func updateBill() {
